@@ -155,4 +155,4 @@ async function checkAndCreateRoom(friendId, setMsg) {
 
 // checkAndCreateRoom()
 
-export { facebookLogin, postAd, getPost, collection, query, where, onSnapshot, db, profiles, updateStatus, handleChat, checkAndCreateRoom }
+export { facebookLogin, auth, postAd, getPost, collection, query, where, onSnapshot, db, profiles, updateStatus, handleChat, checkAndCreateRoom }

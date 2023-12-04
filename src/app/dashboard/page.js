@@ -27,13 +27,7 @@ export default function Dashboard() {
         setIsPopupOpen(false);
     };
 
-    const [chatWindow, setChatWindow] = useState(false)
-    const openChatWindow = () => {
-        setChatWindow(true);
-    };
-    const closeChatWindow = () => {
-        setChatWindow(false);
-    };
+
     const [description, setDescription] = useState()
     const [file, setFile] = useState()
     const [post, setPost] = useState([])
@@ -42,6 +36,7 @@ export default function Dashboard() {
     const [friends, setFriends] = useState()
     const [NewMessages, setNewMessages] = useState()
     const [msg, setMsg] = useState()
+    const [chat ,setChat] = useState(false)
 
     const addData = async () => {
         await postAd({ description, file: file[0] })
@@ -101,6 +96,7 @@ export default function Dashboard() {
     }
     const postMessages = () => {
         handleChat(NewMessages)
+        setChat(true)
     }
 
     if (!friends) {
@@ -121,8 +117,8 @@ export default function Dashboard() {
                 {userExist ? <img src={userExist.photoURL} /> : <span>No Photo</span>} </p>
         </div>
 
-        {/* SIDEBAR */}
         <div style={{ display: 'flex' }}>
+            {/* SIDEBAR */}
             <div style={{ width: '15%' }}>
                 <ul className="iconList" style={{ margin: '3px', backgroundColor: '#EEEAEA ', height: '300px', fontSize: 'large', paddingTop: '15px', lineHeight: 2 }}>
                     <li style={{ color: 'deeppink' }}><MdHome /><Link href="/login">Feed</Link></li>
@@ -133,6 +129,7 @@ export default function Dashboard() {
                     <li ><IoNavigateOutline /><Link href="/login">Messages</Link></li>
                     <li ><IoSettingsOutline /><Link href="/login">Settings</Link></li>
                 </ul>
+                {/* FRIENDS */}
                 <h1>My Contacts</h1>
                 {friends.map(item => {
                     return <div style={{ width: '180px', margin: '3px', borderRadius: '5px', padding: '5px', backgroundColor: '#EEEAEA', display: 'flex' }}>
@@ -147,6 +144,7 @@ export default function Dashboard() {
                 <div onClick={openPopup} style={{ display: 'flex', width: '400px', justifyContent: 'space-evenly', fontSize: 'large', margin: '10px', }}> <FcVideoCall /> Video<FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity
                     <button style={{ backgroundColor: 'deeppink', width: '80px', borderRadius: '10px', color: 'white' }} onClick={openPopup}>POST</button>
                 </div>
+                {/* FEED */}
                 <div >
                     {post.map((item) => (
                         <div style={{ border: '1px solid grey', borderRadius: '10px', margin: '3px', padding: '5px' }}>
@@ -155,7 +153,7 @@ export default function Dashboard() {
                                 {userExist && userExist.displayName}
                             </p>
                             <h3>{item.description}</h3>
-                            <img src={item.url} width='100px' />
+                            <img src={item.url} width='250px' />
                             <button className="button" >Like</button>
                             <button className="button" >Comment</button>
                             <button className="button" >Share</button>
@@ -164,8 +162,8 @@ export default function Dashboard() {
 
                 </div>
             </div>
-
-            <div style={{ width: '10%', margin: '5px' }}>
+            {/* FRIEND REQUEST */}
+            <div style={{ width: '20%', margin: '5px' }}>
                 {friendRequest.map((item) => {
                     return <div style={{ display: 'flex', width: '220px', height: '80px', borderRadius: '5px', border: '1px solid grey', margin: '5px' }}>
                         <img width='60px' src='https://i.imgflip.com/6yvpkj.jpg' />
@@ -175,19 +173,25 @@ export default function Dashboard() {
                         </div> </div>
                 })}
             </div>
-            <div style={{ width: '10%', marginLeft: '100px', marginTop: '10px' }}>
+            {/* CHAT */}
+            <div style={{ width: '10%', marginTop: '10px' }}>
                 <input placeholder='Search friends' />
                 <div>
                     <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
                     {friends.map(item => {
-                        return <div onClick={() => {
-                            checkAndCreateRoom(item.id, setMsg)
-                            openChatWindow
-                        }} style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
+                        return <div onClick={() => {checkAndCreateRoom(item.id, setMsg)
+                        setChat(true)}}
+                        style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
                             <h1> {item.fullname}</h1>
                         </div>
                     })}
                 </div>
+            </div>
+            <div style={{marginTop:'350px'}} >
+              {chat ? <form >
+                    <input style={{ backgroundColor: 'beige' }} type="text" placeholder="Type your message here..." onChange={(e) => setNewMessages(e.target.value)} />
+                    <button onClick={postMessages}>Send</button>
+                </form>:<p></p>}  
             </div>
         </div>
 
@@ -200,15 +204,8 @@ export default function Dashboard() {
         </Popup>
 
 
-        {/* <Popup isOpen={{ chatWindow }} onClose={closeChatWindow}> */}
-             <div>
-            <form >
-                <input style={{ backgroundColor: 'beige' }} type="text" placeholder="Type your message here..." onChange={(e) => setNewMessages(e.target.value)} />
-                <button onClick={postMessages}>Send</button>
-                {/* <button onClick={closeChatWindow}>Close</button> */}
-            </form>
-        </div>
-        {/* </Popup> */}
+
+
         {/* <button onClick={addProfile}>Profiles</button> */}
     </div>
 }
