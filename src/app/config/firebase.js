@@ -41,9 +41,9 @@ function facebookLogin() {
         })
 }
 
-async function postAd({ description, file }) {
+async function postAd({ description, files }) {
     try {
-        const url = await uploadImage(file)
+        const url = await uploadImage(files)
         const data = { description, url }
         await addDoc(collection(db, "posts"), data);
         alert('Posted sucessfully!')
@@ -52,10 +52,10 @@ async function postAd({ description, file }) {
     }
 }
 
-async function uploadImage(file) {
+async function uploadImage(files) {
     try {
-        const storageRef = ref(storage, 'posts/' + file.name);
-        await uploadBytes(storageRef, file)
+        const storageRef = ref(storage, 'posts/' + files.name);
+        await uploadBytes(storageRef, files)
         const url = await getDownloadURL(storageRef)
         return url
     } catch (e) {

@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image'
+import ReactPlayer from 'react-player'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { postAd, getPost, where, profiles, collection, query, onSnapshot, db, updateStatus, handleChat, checkAndCreateRoom } from '../config/firebase'
@@ -29,17 +30,17 @@ export default function Dashboard() {
 
 
     const [description, setDescription] = useState()
-    const [file, setFile] = useState()
+    const [files, setFiles] = useState([])
     const [post, setPost] = useState([])
     const [userExist, setUserExist] = useState()
     const [friendRequest, setFriendRequest] = useState([])
     const [friends, setFriends] = useState()
     const [NewMessages, setNewMessages] = useState()
     const [msg, setMsg] = useState()
-    const [chat ,setChat] = useState(false)
+    const [chat, setChat] = useState(false)
 
     const addData = async () => {
-        await postAd({ description, file: file[0] })
+        await postAd({ description, files: files[0] })
         setIsPopupOpen(false)
     }
     // console.log(setPost)
@@ -99,6 +100,7 @@ export default function Dashboard() {
         setChat(true)
     }
 
+    
     if (!friends) {
         return <div>Loading...</div>
     }
@@ -109,11 +111,15 @@ export default function Dashboard() {
         return <div>Loading...</div>
     }
 
+    const isImage = (file) => file.type.startsWith('image')
+    const isAudio = (file) => file.type.startsWith('audio')
+    const isVideo = (file) => file.type.startsWith('video')
+
     return <div style={{ backgroundColor: 'white', color: 'black' }}>
         {/* NAVBAR */}
         <div className='navbar'>  <h1 style={{ fontSize: 'x-large', color: 'GrayText' }}>Scrolllink</h1>
             <input style={{ border: '1px solid grey', borderRadius: '5px', width: '400px', height: '40px' }} placeholder='Search something here...' />
-            <p style={{ display: 'flex' }}>{userExist && userExist.displayName}
+             <p style={{ display: 'flex' }}>{userExist && userExist.displayName}
                 {userExist ? <img src={userExist.photoURL} /> : <span>No Photo</span>} </p>
         </div>
 
@@ -153,7 +159,28 @@ export default function Dashboard() {
                                 {userExist && userExist.displayName}
                             </p>
                             <h3>{item.description}</h3>
-                            <img src={item.url} width='250px' />
+                            {/* <img src={item.url} width='250px' /> */}
+                            {files.map((item, index) => {
+                                return <div key={index} >
+                                    {isImage(item) && (
+                                        <Image
+                                            src={item.url}
+                                            width={200}
+                                            height={200}
+                                            alt='uploading' />
+                                    )}
+                                    {
+                                        isVideo(item) && (
+                                            <ReactPlayer url={item.url} controls={true} />
+                                        )
+                                    }
+                                    {
+                                        isAudio(item) && (
+                                            <ReactPlayer url={item.url} controls={true} />
+                                        )
+                                    }
+                                </div>
+                            })}
                             <button className="button" >Like</button>
                             <button className="button" >Comment</button>
                             <button className="button" >Share</button>
@@ -179,19 +206,21 @@ export default function Dashboard() {
                 <div>
                     <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
                     {friends.map(item => {
-                        return <div onClick={() => {checkAndCreateRoom(item.id, setMsg)
-                        setChat(true)}}
-                        style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
+                        return <div onClick={() => {
+                            checkAndCreateRoom(item.id, setMsg)
+                            setChat(true)
+                        }}
+                            style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
                             <h1> {item.fullname}</h1>
                         </div>
                     })}
                 </div>
             </div>
-            <div style={{marginTop:'350px'}} >
-              {chat ? <form >
+            <div style={{ marginTop: '350px' }} >
+                {chat ? <form >
                     <input style={{ backgroundColor: 'beige' }} type="text" placeholder="Type your message here..." onChange={(e) => setNewMessages(e.target.value)} />
                     <button onClick={postMessages}>Send</button>
-                </form>:<p></p>}  
+                </form> : <p></p>}
             </div>
         </div>
 
@@ -199,10 +228,9 @@ export default function Dashboard() {
 
             <input style={{ width: '450px', height: '100px', padding: '10px', border: '1px solid grey', borderRadius: '10px', margin: 'auto' }} onChange={(e) => setDescription(e.target.value)} placeholder="Tell us about your day...." />
             <div style={{ display: 'flex', width: '400px', fontSize: 'x-large', margin: '10px', padding: '5px' }}> <FcVideoCall /> Video <FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity</div>
-            <input type='file' onChange={(e) => setFile(e.target.files)} />
+            <input type='file' onChange={(e) => setFiles(e.target.files)} />
             <button style={{ backgroundColor: '#3B71CA', width: '80px', borderRadius: '10px', color: 'white' }} onClick={addData}>POST</button>
         </Popup>
-
 
 
 
