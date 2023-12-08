@@ -142,7 +142,7 @@ export default function Dashboard() {
                 {/* FRIENDS */}
                 <h1>My Contacts</h1>
                 {friends.map((item, index) => {
-                    return <div style={{ width: '180px', margin: '3px', borderRadius: '5px', padding: '5px', backgroundColor: '#EEEAEA', display: 'flex' }}>
+                    return <div key={index} style={{ width: '180px', margin: '3px', borderRadius: '5px', padding: '5px', backgroundColor: '#EEEAEA', display: 'flex' }}>
                         <img width='60px' src='https://i.imgflip.com/6yvpkj.jpg' />
                         <h1 style={{ padding: '5px' }}>{item.displayName}</h1>
                     </div>
@@ -157,7 +157,7 @@ export default function Dashboard() {
                 {/* FEED */}
                 <div >
                     {post.map((item, index) => (
-                        <div style={{ border: '1px solid grey', borderRadius: '10px', margin: '3px', padding: '5px' }}>
+                        <div key={index} style={{ border: '1px solid grey', borderRadius: '10px', margin: '3px', padding: '5px' }}>
                             <p style={{ display: 'flex' }}>
                                 {userExist ? <img src={userExist.photoURL} /> : <span>No Photo</span>}
                                 {userExist && userExist.displayName}
@@ -185,7 +185,7 @@ export default function Dashboard() {
             <div style={{ width: '20%', margin: '5px' }}>
                 <h1 style={{ fontSize: 'large', fontWeight: 'bolder' }}>Friend Requests</h1>
                 {friendRequest.map((item, index) => {
-                    return <div style={{ display: 'flex', width: '220px', height: '80px', borderRadius: '5px', border: '1px solid grey', margin: '5px' }}>
+                    return <div key={index} style={{ display: 'flex', width: '220px', height: '80px', borderRadius: '5px', border: '1px solid grey', margin: '5px' }}>
                         <img width='60px' src='https://i.imgflip.com/6yvpkj.jpg' />
                         <div> <h1>{item.displayName}</h1>
                             <button onClick={() => { updateStatus(item.id, 'accepted') }} style={{ backgroundColor: 'green', margin: '2px', width: '50px', height: '25px', borderRadius: '5px', color: 'white', fontSize: 'small' }}>Accept</button>
@@ -197,7 +197,7 @@ export default function Dashboard() {
             <div>
                 <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
                 {friends.map((item, index) => {
-                    return <div onClick={(item,index) => handleClick(item)
+                    return <div key={index} onClick={(item) => handleClick(item)
                     } style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
                         <h1> {item.displayName}</h1> <TbMessage />
                     </div>
