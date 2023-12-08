@@ -48,7 +48,7 @@ export default function Login() {
             <input style={{ color: 'black', width: '250px', height: '25px', border: '1px solid deeppink', borderRadius: '5px' }} type='password' placeholder='Enter your password' onChange={(e) => setPassword(e.target.value)} /><br /><br />
             <button style={{ border: '1px solid deeppink', width: '80px', height: '30px' }} onClick={signin}>Sign in</button> <br /><br />
             <button style={{ border: '1px solid white', backgroundColor: 'blue', height: '50px', width: '200px' }} onClick={handleFacebookLogin}>Continue with facebook</button> <br /><br />
-            <p style={{ fontSize: 'large' }}>Don't have an account? <span onClick={() => { router.push('/register') }} style={{ cursor: 'pointer' }}> Sign up</span></p>
+            <p style={{ fontSize: 'large' }}>Don`t have an account? <span onClick={() => { router.push('/register') }} style={{ cursor: 'pointer' }}> Sign up</span></p>
 
         </div>
 

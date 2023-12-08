@@ -29,7 +29,6 @@ export default function Dashboard() {
     const [friendRequest, setFriendRequest] = useState([])
     const [friends, setFriends] = useState()
 
-    const [mediaItems, setMediaItems] = useState([]);
     const openPopup = () => {
         setIsPopupOpen(true);
     };
@@ -115,7 +114,7 @@ export default function Dashboard() {
     if (!post) {
         return <div>Loading...</div>
     }
-    const handleClick = async (item) => {
+    const handleClick = async (item, index) => {
         router.push('/chats')
     }
 
@@ -174,21 +173,6 @@ export default function Dashboard() {
                                     </video>
                                 ) : null}
                             </div>
-                            {/* <h3>{item.description}</h3> */}
-                            {/* <img src={item.url} width='250px' /> */}
-                            {/* {mediaItems.map((item, index) => (
-                                <div key={index}>
-                                    <h1>{item.description}</h1>
-                                    {item.type === 'image' ? (
-                                        <img src={item.url} alt={item.description} style={{ maxWidth: '100%', maxHeight: '400px' }} />
-                                    ) : item.type === 'video' ? (
-                                        <video controls width="400">
-                                            <source src={item.url} type="video/mp4" />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    ) : null}
-                                </div>
-                            ))} */}
                             <button className="button" >Like</button>
                             <button className="button" >Comment</button>
                             <button className="button" >Share</button>
@@ -213,7 +197,7 @@ export default function Dashboard() {
             <div>
                 <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
                 {friends.map((item, index) => {
-                    return <div onClick={(item) => handleClick(item)
+                    return <div onClick={(item,index) => handleClick(item)
                     } style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
                         <h1> {item.displayName}</h1> <TbMessage />
                     </div>
