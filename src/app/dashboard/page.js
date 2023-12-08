@@ -3,13 +3,13 @@ import Image from 'next/image'
 import ReactPlayer from 'react-player'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { postAd, getPost, where, profiles, collection, query, onSnapshot, db, updateStatus, handleChat, checkAndCreateRoom } from '../config/firebase'
+import { postAd, getPost, where, collection, query, onSnapshot, db, updateStatus } from '../config/firebase'
 import Popup from '../popup/page'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, getAdditionalUserInfo, signOut } from 'firebase/auth'
 import Link from 'next/link'
 
 import { MdHome, MdOutlineGroup } from "react-icons/md";
-import { TbGridDots } from "react-icons/tb";
+import { TbGridDots, TbMessage } from "react-icons/tb";
 import { FaFaceGrinBeam, FaRegBookmark } from "react-icons/fa6";
 import { RiShoppingBag2Line } from "react-icons/ri";
 import { IoNavigateOutline, IoSettingsOutline } from "react-icons/io5";
@@ -21,6 +21,15 @@ export default function Dashboard() {
     const auth = getAuth()
 
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [description, setDescription] = useState()
+    const [files, setFiles] = useState([])
+    const [post, setPost] = useState([])
+    const [type, setType] = useState()
+    const [userExist, setUserExist] = useState()
+    const [friendRequest, setFriendRequest] = useState([])
+    const [friends, setFriends] = useState()
+
+    const [mediaItems, setMediaItems] = useState([]);
     const openPopup = () => {
         setIsPopupOpen(true);
     };
@@ -28,19 +37,8 @@ export default function Dashboard() {
         setIsPopupOpen(false);
     };
 
-
-    const [description, setDescription] = useState()
-    const [files, setFiles] = useState([])
-    const [post, setPost] = useState([])
-    const [userExist, setUserExist] = useState()
-    const [friendRequest, setFriendRequest] = useState([])
-    const [friends, setFriends] = useState()
-    const [NewMessages, setNewMessages] = useState()
-    const [msg, setMsg] = useState()
-    const [chat, setChat] = useState(false)
-
     const addData = async () => {
-        await postAd({ description, files: files[0] })
+        await postAd({ description, files: files[0], type })
         setIsPopupOpen(false)
     }
     // console.log(setPost)
@@ -50,6 +48,8 @@ export default function Dashboard() {
         renderProfile()
         contacts()
     }, [])
+
+
 
     const getData = async () => {
         const postData = await getPost()
@@ -66,14 +66,12 @@ export default function Dashboard() {
 
             }
         })
-    }, [])
+    }, [logOut])
     // console.log('users', userExist)
 
-    function addProfile() {
-        profiles()
-    }
+
     const renderProfile = async () => {
-        const a = query(collection(db, 'profiles'), where('status', '==', 'pending'))
+        const a = query(collection(db, 'profile'), where('status', '==', 'pending'))
         const unsubscribe = onSnapshot(a, (querySnapshot) => {
             const data = [];
             querySnapshot.forEach((doc) => {
@@ -85,7 +83,7 @@ export default function Dashboard() {
     }
 
     async function contacts() {
-        const q = query(collection(db, "profiles"), where("status", "==", "accepted"));
+        const q = query(collection(db, "profile"), where("status", "==", "accepted"));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const data = [];
             querySnapshot.forEach((doc) => {
@@ -95,12 +93,19 @@ export default function Dashboard() {
             setFriends(data)
         });
     }
-    const postMessages = () => {
-        handleChat(NewMessages)
-        setChat(true)
+
+    async function logOut() {
+        await signOut(auth)
+            .then(() => {
+                setUserExist(null);
+                router.push('/login', { scroll: false })
+            })
+            .catch((error) => {
+                // An error happened.
+            });
     }
 
-    
+
     if (!friends) {
         return <div>Loading...</div>
     }
@@ -110,16 +115,16 @@ export default function Dashboard() {
     if (!post) {
         return <div>Loading...</div>
     }
-
-    const isImage = (file) => file.type.startsWith('image')
-    const isAudio = (file) => file.type.startsWith('audio')
-    const isVideo = (file) => file.type.startsWith('video')
+    const handleClick = async (item) => {
+        router.push('/chats')
+    }
 
     return <div style={{ backgroundColor: 'white', color: 'black' }}>
         {/* NAVBAR */}
         <div className='navbar'>  <h1 style={{ fontSize: 'x-large', color: 'GrayText' }}>Scrolllink</h1>
             <input style={{ border: '1px solid grey', borderRadius: '5px', width: '400px', height: '40px' }} placeholder='Search something here...' />
-             <p style={{ display: 'flex' }}>{userExist && userExist.displayName}
+            <button style={{ border: '1px solid grey', height: '30px', width: '70px', borderRadius: '10px' }} onClick={logOut}>Log out</button>
+            <p style={{ display: 'flex' }}>{userExist && userExist.displayName}
                 {userExist ? <img src={userExist.photoURL} /> : <span>No Photo</span>} </p>
         </div>
 
@@ -137,10 +142,10 @@ export default function Dashboard() {
                 </ul>
                 {/* FRIENDS */}
                 <h1>My Contacts</h1>
-                {friends.map(item => {
+                {friends.map((item, index) => {
                     return <div style={{ width: '180px', margin: '3px', borderRadius: '5px', padding: '5px', backgroundColor: '#EEEAEA', display: 'flex' }}>
                         <img width='60px' src='https://i.imgflip.com/6yvpkj.jpg' />
-                        <h1>{item.fullname}</h1>
+                        <h1 style={{ padding: '5px' }}>{item.displayName}</h1>
                     </div>
                 })}
             </div>
@@ -152,35 +157,38 @@ export default function Dashboard() {
                 </div>
                 {/* FEED */}
                 <div >
-                    {post.map((item) => (
+                    {post.map((item, index) => (
                         <div style={{ border: '1px solid grey', borderRadius: '10px', margin: '3px', padding: '5px' }}>
                             <p style={{ display: 'flex' }}>
                                 {userExist ? <img src={userExist.photoURL} /> : <span>No Photo</span>}
                                 {userExist && userExist.displayName}
                             </p>
-                            <h3>{item.description}</h3>
+                            <div key={index}>
+                                <h1>{item.description}</h1>
+                                {item.type === 'image' ? (
+                                    <img src={item.url} alt={item.description} style={{ maxWidth: '100%', maxHeight: '400px' }} />
+                                ) : item.type === 'video' ? (
+                                    <video controls width="400">
+                                        <source src={item.url} type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                ) : null}
+                            </div>
+                            {/* <h3>{item.description}</h3> */}
                             {/* <img src={item.url} width='250px' /> */}
-                            {files.map((item, index) => {
-                                return <div key={index} >
-                                    {isImage(item) && (
-                                        <Image
-                                            src={item.url}
-                                            width={200}
-                                            height={200}
-                                            alt='uploading' />
-                                    )}
-                                    {
-                                        isVideo(item) && (
-                                            <ReactPlayer url={item.url} controls={true} />
-                                        )
-                                    }
-                                    {
-                                        isAudio(item) && (
-                                            <ReactPlayer url={item.url} controls={true} />
-                                        )
-                                    }
+                            {/* {mediaItems.map((item, index) => (
+                                <div key={index}>
+                                    <h1>{item.description}</h1>
+                                    {item.type === 'image' ? (
+                                        <img src={item.url} alt={item.description} style={{ maxWidth: '100%', maxHeight: '400px' }} />
+                                    ) : item.type === 'video' ? (
+                                        <video controls width="400">
+                                            <source src={item.url} type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    ) : null}
                                 </div>
-                            })}
+                            ))} */}
                             <button className="button" >Like</button>
                             <button className="button" >Comment</button>
                             <button className="button" >Share</button>
@@ -191,36 +199,25 @@ export default function Dashboard() {
             </div>
             {/* FRIEND REQUEST */}
             <div style={{ width: '20%', margin: '5px' }}>
-                {friendRequest.map((item) => {
+                <h1 style={{ fontSize: 'large', fontWeight: 'bolder' }}>Friend Requests</h1>
+                {friendRequest.map((item, index) => {
                     return <div style={{ display: 'flex', width: '220px', height: '80px', borderRadius: '5px', border: '1px solid grey', margin: '5px' }}>
                         <img width='60px' src='https://i.imgflip.com/6yvpkj.jpg' />
-                        <div> <h1>{item.fullname}</h1>
+                        <div> <h1>{item.displayName}</h1>
                             <button onClick={() => { updateStatus(item.id, 'accepted') }} style={{ backgroundColor: 'green', margin: '2px', width: '50px', height: '25px', borderRadius: '5px', color: 'white', fontSize: 'small' }}>Accept</button>
                             <button onClick={() => { updateStatus(item.id, 'rejected') }} style={{ backgroundColor: 'red', width: '50px', margin: '2px', height: '25px', borderRadius: '5px', color: 'white', fontSize: "small" }}>Reject</button>
                         </div> </div>
                 })}
             </div>
             {/* CHAT */}
-            <div style={{ width: '10%', marginTop: '10px' }}>
-                <input placeholder='Search friends' />
-                <div>
-                    <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
-                    {friends.map(item => {
-                        return <div onClick={() => {
-                            checkAndCreateRoom(item.id, setMsg)
-                            setChat(true)
-                        }}
-                            style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
-                            <h1> {item.fullname}</h1>
-                        </div>
-                    })}
-                </div>
-            </div>
-            <div style={{ marginTop: '350px' }} >
-                {chat ? <form >
-                    <input style={{ backgroundColor: 'beige' }} type="text" placeholder="Type your message here..." onChange={(e) => setNewMessages(e.target.value)} />
-                    <button onClick={postMessages}>Send</button>
-                </form> : <p></p>}
+            <div>
+                <h1 style={{ fontSize: 'large', margin: '10px', padding: '10px', height: '40px', fontWeight: 'bolder' }} >CHATS</h1>
+                {friends.map((item, index) => {
+                    return <div onClick={(item) => handleClick(item)
+                    } style={{ border: '1px solid black', borderRadius: '10px', margin: '10px', padding: '10px', width: '200px', display: 'flex', justifyContent: 'space-between' }} >
+                        <h1> {item.displayName}</h1> <TbMessage />
+                    </div>
+                })}
             </div>
         </div>
 
@@ -228,13 +225,13 @@ export default function Dashboard() {
 
             <input style={{ width: '450px', height: '100px', padding: '10px', border: '1px solid grey', borderRadius: '10px', margin: 'auto' }} onChange={(e) => setDescription(e.target.value)} placeholder="Tell us about your day...." />
             <div style={{ display: 'flex', width: '400px', fontSize: 'x-large', margin: '10px', padding: '5px' }}> <FcVideoCall /> Video <FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity</div>
-            <input type='file' onChange={(e) => setFiles(e.target.files)} />
+            <input type='file' onChange={(e) => setFiles(e.target.files)} multiple />
+            <input type='text' placeholder='Write image/video' onChange={(e) => setType(e.target.value)} />
             <button style={{ backgroundColor: '#3B71CA', width: '80px', borderRadius: '10px', color: 'white' }} onClick={addData}>POST</button>
         </Popup>
 
 
 
-        {/* <button onClick={addProfile}>Profiles</button> */}
     </div>
 }
 

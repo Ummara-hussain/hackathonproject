@@ -1,14 +1,14 @@
 "use client"
-import { useEffect, useState } from "react"
-import ReactPlayer from "react-player"
-import Image from "next/image"
 import { useRouter } from 'next/navigation'
-import { facebookLogin, auth } from "../config/firebase"
-import { onAuthStateChanged } from "firebase/auth"
+import { useState } from 'react'
+import { facebookLogin, auth, LoginUser } from "../config/firebase"
+import { onAuthStateChanged, getAdditionalUserInfo } from "firebase/auth"
 
 
 export default function Login() {
     const router = useRouter()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
 
     const handleFacebookLogin = async () => {
         try {
@@ -19,7 +19,11 @@ export default function Login() {
             console.log(error)
         }
     }
-
+    const signin = async () => {
+        const res = await LoginUser(email, password);
+        console.log(res);
+        router.push("/dashboard");
+    }
     // useEffect(() => {
     //     onAuthStateChanged(auth, (user) => {
     //         if (user) {
@@ -35,46 +39,18 @@ export default function Login() {
 
     // console.log('user', user)
 
-    
-    const [files, setFiles] = useState(null)
-    const isImage = (file) => file.type.startsWith('image')
-    const isAudio = (file) => file.type.startsWith('audio')
-    const isVideo = (file) => file.type.startsWith('video')
-
 
     return <div>
-        {/* <h1>Login</h1> */}
-        <div style={{ textAlign: 'center', borderRadius: '10px', padding: '10px', lineHeight: '3', margin: 'auto', width: '350px', height: '250px', border: '1px solid deeppink', marginTop: '40px', marginBottom: '40px' }}>
-            <h2>Welcome!</h2>
-            <h4>Log in with your Facebook account to continue.</h4>
-            <button style={{ border: '1px solid deeppink', width: '100px' }} onClick={handleFacebookLogin}>Signin</button>
-        </div>
-        <input
-            type='file'
-            onChange={(e) => setFiles(e.target.files)
-            } />
+        <div style={{ textAlign: 'center', borderRadius: '10px', padding: '10px', lineHeight: '1', margin: 'auto', width: '550px', height: '350px', border: '1px solid deeppink', marginTop: '40px', marginBottom: '40px' }}>
+            <h2 style={{ fontSize: 'xx-large', fontWeight: 'bolder', margin: '20px', textAlign: 'center' }}>Welcome!</h2>
+            <h4>Sign in OR Log in with your Facebook account to continue.</h4> <br />
+            <input style={{ color: 'black', width: '250px', height: '25px', border: '1px solid deeppink', borderRadius: '5px' }} type='email' placeholder='Enter your email' onChange={(e) => setEmail(e.target.value)} /><br /><br />
+            <input style={{ color: 'black', width: '250px', height: '25px', border: '1px solid deeppink', borderRadius: '5px' }} type='password' placeholder='Enter your password' onChange={(e) => setPassword(e.target.value)} /><br /><br />
+            <button style={{ border: '1px solid deeppink', width: '80px', height: '30px' }} onClick={signin}>Sign in</button> <br /><br />
+            <button style={{ border: '1px solid white', backgroundColor: 'blue', height: '50px', width: '200px' }} onClick={handleFacebookLogin}>Continue with facebook</button> <br /><br />
+            <p style={{ fontSize: 'large' }}>Don't have an account? <span onClick={() => { router.push('/register') }} style={{ cursor: 'pointer' }}> Sign up</span></p>
 
-        {files && Array.from(files).map((file, index) => {
-            return <div key={index}>
-                {isImage(file) && (
-                    <Image
-                        src={URL.createObjectURL(file)}
-                        width={200}
-                        height={200}
-                        alt='uploading' />
-                )}
-                {
-                    isVideo(file) && (
-                        <ReactPlayer url={URL.createObjectURL(file)} controls={true} />
-                    )
-                } 
-                {
-                    isAudio(file) && (
-                        <ReactPlayer url={URL.createObjectURL(file)} controls={true} />
-                    )
-                } 
-                </div>
-        })}
+        </div>
 
     </div>
 }

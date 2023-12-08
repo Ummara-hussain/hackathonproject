@@ -6,8 +6,8 @@ import Modal from 'react-modal';
 const customStyles = {
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    color:'black'
-    },
+    color: 'black'
+  },
   content: {
     maxWidth: '500px',
     height: '300px',
