@@ -4,7 +4,6 @@ import ReactPlayer from 'react-player'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { postAd, getPost, where, collection, query, onSnapshot, db, updateStatus } from '../config/firebase'
-import Popup from '../popup/page'
 import { getAuth, onAuthStateChanged, getAdditionalUserInfo, signOut } from 'firebase/auth'
 import Link from 'next/link'
 
@@ -20,7 +19,6 @@ export default function Dashboard() {
     const router = useRouter()
     const auth = getAuth()
 
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [description, setDescription] = useState()
     const [files, setFiles] = useState([])
     const [post, setPost] = useState([])
@@ -29,16 +27,9 @@ export default function Dashboard() {
     const [friendRequest, setFriendRequest] = useState([])
     const [friends, setFriends] = useState()
 
-    const openPopup = () => {
-        setIsPopupOpen(true);
-    };
-    const closePopup = () => {
-        setIsPopupOpen(false);
-    };
 
     const addData = async () => {
         await postAd({ description, files: files[0], type })
-        setIsPopupOpen(false)
     }
     // console.log(setPost)
 
@@ -150,10 +141,15 @@ export default function Dashboard() {
             </div>
 
             <div style={{ padding: '10px' }}>
-                <input style={{ width: '450px', height: '100px', padding: '10px', border: '1px solid grey', borderRadius: '10px', margin: 'auto' }} onClick={openPopup} placeholder="Tell us about your day...." />
-                <div onClick={openPopup} style={{ display: 'flex', width: '400px', justifyContent: 'space-evenly', fontSize: 'large', margin: '10px', }}> <FcVideoCall /> Video<FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity
-                    <button style={{ backgroundColor: 'deeppink', width: '80px', borderRadius: '10px', color: 'white' }} onClick={openPopup}>POST</button>
+                <input onChange={(e) => setDescription(e.target.value)} style={{ width: '450px', height: '100px', padding: '10px', border: '1px solid grey', borderRadius: '10px', margin: 'auto' }} placeholder="Tell us about your day...." />
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '450px', fontSize: 'medium', margin: '5px', }}>
+                    <input type='file' onChange={(e) => setFiles(e.target.files)} multiple />
+                    <input type='text' style={{border:'1px solid grey', borderRadius:'10px'}} placeholder='Write image/video' onChange={(e) => setType(e.target.value)} />
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '400px', fontSize: 'large', margin: '10px', }}> <FcVideoCall /> Video<FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity
+                    <button style={{ backgroundColor: 'deeppink', width: '60px', borderRadius: '10px', color: 'white' }} onClick={addData}>POST</button>
+                </div>
+
                 {/* FEED */}
                 <div >
                     {post.map((item, index) => (
@@ -204,16 +200,6 @@ export default function Dashboard() {
                 })}
             </div>
         </div>
-
-        <Popup isOpen={isPopupOpen} onClose={closePopup}>
-
-            <input style={{ width: '450px', height: '100px', padding: '10px', border: '1px solid grey', borderRadius: '10px', margin: 'auto' }} onChange={(e) => setDescription(e.target.value)} placeholder="Tell us about your day...." />
-            <div style={{ display: 'flex', width: '400px', fontSize: 'x-large', margin: '10px', padding: '5px' }}> <FcVideoCall /> Video <FcAddImage /> Photos <FaFaceGrinBeam /> Feeling/Activity</div>
-            <input type='file' onChange={(e) => setFiles(e.target.files)} multiple />
-            <input type='text' placeholder='Write image/video' onChange={(e) => setType(e.target.value)} />
-            <button style={{ backgroundColor: '#3B71CA', width: '80px', borderRadius: '10px', color: 'white' }} onClick={addData}>POST</button>
-        </Popup>
-
 
 
     </div>
